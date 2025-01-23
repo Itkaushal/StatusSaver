@@ -48,7 +48,7 @@ fun Privacy_Policy(navController: NavController) {
             "The security of your data is important to us. We implement reasonable security procedures to protect your information from unauthorized access.",
             "5. Children's Privacy:",
             "Our App does not address anyone under the age of 13. We do not knowingly collect personally identifiable information from children under 13. If you are a parent or guardian and you are aware that your child has provided us with personal data, please contact us.",
-            "If you have any questions about this Privacy Policy, please contact us at: mzkhan9610@gmail.com"
+            "If you have any questions about this Privacy Policy, please contact us at: kaushalprajapati9953@gmail.com"
         ),
         "Urdu" to listOf(
             "WhatsApp Status Saver کے لیے رازداری کی پالیسی",
@@ -69,7 +69,7 @@ fun Privacy_Policy(navController: NavController) {
             "آپ کے ڈیٹا کی سیکیورٹی ہمارے لیے اہم ہے۔ ہم غیر مجاز رسائی سے آپ کی معلومات کی حفاظت کے لیے معقول سیکیورٹی طریقہ کار کو نافذ کرتے ہیں۔",
             "5. بچوں کی رازداری:",
             "ہماری ایپ کسی بھی شخص کے لیے نہیں ہے جس کی عمر 13 سال سے کم ہو۔ ہم 13 سال سے کم عمر بچوں سے جان بوجھ کر شناخت کی قابل معلومات جمع نہیں کرتے۔ اگر آپ والدین یا سرپرست ہیں اور آپ جانتے ہیں کہ آپ کے بچے نے ہمیں ذاتی ڈیٹا فراہم کیا ہے تو براہ کرم ہم سے رابطہ کریں۔",
-            "اگر آپ کو اس رازداری کی پالیسی کے بارے میں کوئی سوالات ہیں تو براہ کرم ہم سے اس ای میل پر رابطہ کریں: mzkhan9610@gmail.com"
+            "اگر آپ کو اس رازداری کی پالیسی کے بارے میں کوئی سوالات ہیں تو براہ کرم ہم سے اس ای میل پر رابطہ کریں: kaushalprajapati9953@gmail.com"
         ),
         "Arabic" to listOf(
             "سياسة الخصوصية لتطبيق WhatsApp Status Saver",
@@ -90,7 +90,7 @@ fun Privacy_Policy(navController: NavController) {
             "أمان بياناتك مهم بالنسبة لنا. نحن نطبق إجراءات أمان معقولة لحماية معلوماتك من الوصول غير المصرح به.",
             "5. خصوصية الأطفال:",
             "تطبيقنا لا يتوجه إلى أي شخص يقل عمره عن 13 عامًا. نحن لا نجمع عمدًا معلومات شخصية قابلة للتحديد من الأطفال دون سن 13 عامًا. إذا كنت أحد الوالدين أو الوصي وتعلم أن طفلك قد زودنا ببيانات شخصية، يرجى الاتصال بنا.",
-            "إذا كانت لديك أي أسئلة حول سياسة الخصوصية هذه، يرجى الاتصال بنا على: mzkhan9610@gmail.com"
+            "إذا كانت لديك أي أسئلة حول سياسة الخصوصية هذه، يرجى الاتصال بنا على: kaushalprajapati9953@gmail.com"
         )
     )
 
