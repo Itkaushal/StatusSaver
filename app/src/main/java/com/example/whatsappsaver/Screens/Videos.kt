@@ -119,19 +119,10 @@ fun Videos(navController: NavController, selectedLanguage: String) {
                             .size(26.dp)
                     )
 
-                    "Marathi" ->  Image(
-                        painter = painterResource(id = R.drawable.premium),
-                        contentDescription = "",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .padding(end = 10.dp)
-                            .size(26.dp)
-                    )
 
                     else ->    Text(
                         text = when (selectedLanguage) {
                             "Hindi" -> "स्थिति वीडियो"
-                            "Marathi" -> "स्थिती प्रतिमा"
                             "English" -> "Status Videos"
                             else -> "Status Videos"
                         },
@@ -145,20 +136,6 @@ fun Videos(navController: NavController, selectedLanguage: String) {
                     "Hindi" ->   Text(
                         text = when (selectedLanguage) {
                             "Hindi" -> "थिति वीडिय"
-                            "Marathi" -> "स्थिती प्रतिमा"
-                            "English" -> "Status Videos"
-                            else -> "Status Videos"
-                        },
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    )
-
-
-                    "Marathi" -> Text(
-                        text = when (selectedLanguage) {
-                            "Hindi" -> "थिति वीडिय"
-                            "Marathi" -> "स्थिती प्रतिमा"
                             "English" -> "Status Videos"
                             else -> "Status Videos"
                         },
@@ -177,7 +154,8 @@ fun Videos(navController: NavController, selectedLanguage: String) {
                     )
                 }
 
-            }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF673AB7)))
+            }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF17A752)),
+                expandedHeight = 40.dp)
         },
     ) {
 
@@ -261,10 +239,12 @@ fun downloadVideo(context: Context, file: File) {
         )
         file.copyTo(downloadsFolder, overwrite = true)
 
+        // ✅ Save file path in SharedPreferences
         saveFileToPreferences(context, downloadsFolder.absolutePath)
 
         Toast.makeText(context, "Video saved to Downloads", Toast.LENGTH_SHORT).show()
 
+        // ✅ Refresh media store
         val intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
         intent.data = Uri.fromFile(downloadsFolder)
         context.sendBroadcast(intent)
@@ -275,6 +255,7 @@ fun downloadVideo(context: Context, file: File) {
     }
 }
 
+
 fun loadVideoThumbnail(file: File): Bitmap? {
     return ThumbnailUtils.createVideoThumbnail(
         file.path, MediaStore.Images.Thumbnails.MINI_KIND
@@ -282,20 +263,40 @@ fun loadVideoThumbnail(file: File): Bitmap? {
 }
 
 
+
+@SuppressLint("MutatingSharedPrefs")
 fun saveFileToPreferences(context: Context, filePath: String) {
     val sharedPreferences = context.getSharedPreferences("SavedMedia", Context.MODE_PRIVATE)
     val editor = sharedPreferences.edit()
 
-    val savedFiles = sharedPreferences.getStringSet("savedFiles", mutableSetOf()) ?: mutableSetOf()
-    savedFiles.add(filePath)
+    // Retrieve existing saved files
+    val savedFiles = sharedPreferences.getStringSet("savedFiles", mutableSetOf())?.toMutableSet()
+        ?: mutableSetOf()
+
+    savedFiles.add(filePath)  // Add new file path
+
     editor.putStringSet("savedFiles", savedFiles)
-    editor.apply()
+    val success = editor.commit()  // Use commit() for immediate save
+
+    // Log to check if file path is stored
+    Log.d("SavedMedia", "File path saved: $filePath, Success: $success")
 }
 
-fun getSavedFilesFromPreferences(context: Context): Set<String> {
+
+
+
+fun getSavedFilesFromPreferences(context: Context): MutableSet<String> {
     val sharedPreferences = context.getSharedPreferences("SavedMedia", Context.MODE_PRIVATE)
-    return sharedPreferences.getStringSet("savedFiles", mutableSetOf()) ?: mutableSetOf()
+    val files = sharedPreferences.getStringSet("savedFiles", mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+
+    // Validate file paths before returning
+    val validFiles = files.filter { File(it).exists() }.toMutableSet()
+
+    Log.d("SavedMedia", "Retrieved Files: $validFiles")
+
+    return validFiles
 }
+
 
 
 

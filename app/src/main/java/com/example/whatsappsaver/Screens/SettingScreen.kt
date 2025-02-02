@@ -28,13 +28,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.AdminPanelSettings
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Place
+import androidx.compose.material.icons.outlined.PlaylistAddCheckCircle
+import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.StarRate
 import androidx.compose.material.icons.outlined.ThumbUp
+import androidx.compose.material.icons.outlined.Whatsapp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -80,20 +85,19 @@ fun SettingScreen(
     var selectedLanguage by remember {
         mutableStateOf(sharedPreferences.getString("selectedLanguage", "English") ?: "English")
     }
-    val tittle = context.applicationInfo.packageName
 
     var rate by remember {
         mutableStateOf(false)
     }
-    val pakagename = context.applicationInfo.packageName
+    //val pakagename = context.applicationInfo.packageName
     var showLanguageDialog by remember { mutableStateOf(false) }
 
     val layoutDirection = when (selectedLanguage) {
-        "Hindi", "Marathi" -> LayoutDirection.Rtl
+        "Hindi" -> LayoutDirection.Rtl
         else -> LayoutDirection.Ltr
     }
     val sendIntent = Intent(Intent.ACTION_SEND).apply {
-        putExtra(Intent.EXTRA_TEXT, "https://play.google.com/store/apps/details?id=$pakagename")
+        putExtra(Intent.EXTRA_TEXT, "https://github.com/Itkaushal/StatusSaver/")
         type = "text/plain"
     }
     val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
@@ -106,7 +110,6 @@ fun SettingScreen(
                     Text(
                         text = when (selectedLanguage) {
                             "Hindi" -> "सेटिंग्स"
-                            "Marathi" -> "सेटिंग्ज"
                             else -> "Settings"
                         }, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp
                     )
@@ -120,13 +123,14 @@ fun SettingScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF673AB7))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF17A752)),
+                expandedHeight = 40.dp
             )
         }) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 80.dp, start = 16.dp, bottom = 16.dp, end = 16.dp),
+                    .padding(top = 100.dp, start = 16.dp, bottom = 16.dp, end = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -134,38 +138,33 @@ fun SettingScreen(
                 RowWithIcon(
                     icon = Icons.Outlined.Place, title = when (selectedLanguage) {
                         "Hindi" -> "भाषाएँ"
-                        "Marathi" -> "भाषा"
                         else -> "Languages"
                     }, subtitle = when (selectedLanguage) {
                         "Hindi" -> "चयनित भाषा: ${selectedLanguage}"
-                        "Marathi" -> "निवडलेली भाषा: ${selectedLanguage}"
                         else -> "Selected Language: ${selectedLanguage}"
                     }, onClick = { showLanguageDialog = true }, selectedLanguage = selectedLanguage
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
                     text = when (selectedLanguage) {
                         "Hindi" -> "अन्य"
-                        "Marathi" -> "इतर"
                         else -> "Others"
                     },
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF673AB7),
+                    color = Color.White,
                     modifier = Modifier.align(Alignment.Start)
                 )
 
 
                 RowWithIcon(
-                    icon = Icons.Outlined.Share, title = when (selectedLanguage) {
+                    icon = Icons.Outlined.Whatsapp, title = when (selectedLanguage) {
                         "Hindi" -> "ऐप शेयर करें"
-                        "Marathi" -> "अँप शेअर करा"
                         else -> "Share App"
                     }, subtitle = when (selectedLanguage) {
                         "Hindi" -> "ऐप अपने दोस्तों के साथ शेयर करें"
-                        "Marathi" -> "अँप मित्रांसोबत शेअर करा"
                         else -> "Share app with friends and family"
                     }, onClick = {
                         context.startActivity(shareIntent)
@@ -174,14 +173,12 @@ fun SettingScreen(
 
 
                 RowWithIcon(
-                    icon = Icons.Outlined.ThumbUp, title = when (selectedLanguage) {
+                    icon = Icons.Outlined.StarRate, title = when (selectedLanguage) {
                         "Hindi" -> "हमें रेट करें"
-                        "Marathi" -> "रेट करा"
                         else -> "Rate Us"
                     }, subtitle = when (selectedLanguage) {
-                        "Hindi" -> ""
-                        "Marathi" -> "कृपया हमारी ऐप को रेट करें"
-                        else -> "कृपया आमच्या अँप रेट करा"
+                        "Hindi" -> "हमें रेट करें"
+                        else -> "Please Rate Our App."
                     }, onClick = {
                         rate = true
                     }, selectedLanguage = selectedLanguage
@@ -189,13 +186,11 @@ fun SettingScreen(
 
 
                 RowWithIcon(
-                    icon = Icons.Outlined.CheckCircle, title = when (selectedLanguage) {
+                    icon = Icons.Outlined.PrivacyTip, title = when (selectedLanguage) {
                         "Hindi" -> "गोपनीयता नीति"
-                        "Marathi" -> "प्रायव्हसी पॉलिसी"
                         else -> "Privacy Policy"
                     }, subtitle = when (selectedLanguage) {
                         "Hindi" -> "हमारी गोपनीयता नीति पढ़ेंں"
-                        "Marathi" -> "आमची प्रायव्हसी पॉलिसी वाचा"
                         else -> "Read our privacy policy carefully"
                     }, selectedLanguage = selectedLanguage, onClick = {
                         navController.navigate(Screens.Privacy_Policy.route)
@@ -203,13 +198,11 @@ fun SettingScreen(
                 )
 
                 RowWithIcon(
-                    icon = Icons.Outlined.Add, title = when (selectedLanguage) {
+                    icon = Icons.Outlined.PlaylistAddCheckCircle, title = when (selectedLanguage) {
                         "Hindi" -> "नियम और शर्तें"
-                        "Marathi" -> "नियम आणि अटी"
                         else -> "Terms & Conditions"
                     }, subtitle = when (selectedLanguage) {
                         "Hindi" -> "हमारी नियम और शर्तें पढ़ें"
-                        "Marathi" -> "आमचे नियम आणि अटी वाचा"
                         else -> "Read our terms & conditions carefully"
                     }, selectedLanguage = selectedLanguage, onClick = {
                         navController.navigate(Screens.TermsScreen.route)
@@ -218,9 +211,8 @@ fun SettingScreen(
 
 
                 RowWithIcon(
-                    icon = Icons.Outlined.Info, title = when (selectedLanguage) {
+                    icon = Icons.Outlined.AdminPanelSettings, title = when (selectedLanguage) {
                         "Hindi" -> "संस्करण: $appVersion"
-                        "Marathi" -> "आवृत्ती: $appVersion"
                         else -> "Version: $appVersion"
                     }, selectedLanguage = selectedLanguage, subtitle = null
                 )
@@ -236,7 +228,6 @@ fun SettingScreen(
                         Text(
                             text = when (selectedLanguage) {
                                 "Hindi" -> "हमें रेट करें"
-                                "Marathi" -> "रेट करा"
                                 else -> "Rate Us"
                             },
                             fontWeight = FontWeight.Bold,
@@ -252,7 +243,6 @@ fun SettingScreen(
                             Text(
                                 text = when (selectedLanguage) {
                                     "Hindi" -> "कृपया हमारी ऐप को रेट करें"
-                                    "Marathi" -> "कृपया आमच्या अपला रेट करा"
                                     else -> "Please rate our app"
                                 },
                                 fontSize = 16.sp,
@@ -291,7 +281,6 @@ fun SettingScreen(
                             Text(
                                 text = when (selectedLanguage) {
                                     "Hindi" -> "प्रस्तुत करें"
-                                    "Marathi" -> "सबमिट करा"
                                     else -> "Submit"
                                 },
                                 color = Color.White
@@ -302,8 +291,6 @@ fun SettingScreen(
                         TextButton(onClick = { rate = false }) {
                             Text(
                                 text = when (selectedLanguage) {
-                                    "Urdu" ->"रद्द करें"
-                                    "Marathi" -> "रद्द कारे"
                                     else -> "Cancel"
                                 }
                             )
@@ -394,7 +381,6 @@ fun RowWithIcon(
                 .rotate(
                     when (selectedLanguage) {
                         "Hindi" -> 180f
-                        "Marathi" -> 180f
                         else -> 0f
                     }
 
@@ -412,7 +398,7 @@ fun LanguageSelectionDialog(
 ) {
     var tempSelectedLanguage by remember { mutableStateOf(selectedLanguage) }
 
-    val languages = listOf("English", "Hindi", "Marathi", "Gujrati")
+    val languages = listOf("English", "Hindi")
 
     AlertDialog(
         onDismissRequest = onDismissRequest,

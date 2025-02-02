@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.example.whatsappsaver"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.whatsappsaver"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -52,7 +52,7 @@ android {
 dependencies {
 
     implementation (libs.accompanist.permissions)
-    val nav_version = "2.8.1"
+    //val nav_version = "2.8.1"
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.compose.video)

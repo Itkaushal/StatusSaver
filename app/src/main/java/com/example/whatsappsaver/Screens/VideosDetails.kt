@@ -6,9 +6,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.DownloadForOffline
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -54,23 +59,26 @@ fun VideoDetail(navController: NavController, videoPath: String, selectedLanguag
 
         Icon(
             imageVector = Icons.Default.ArrowBack,
-            contentDescription = "",
-            tint = Color.White,
+            contentDescription = "BackArrow",
+            tint = Color(0xFF8F16CC),
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(16.dp)
+                .padding(top = 40.dp, start = 20.dp)
+                .height(40.dp)
+                .width(50.dp)
                 .clickable {
                     navController.popBackStack()
                 }
         )
 
         Icon(
-            imageVector = Icons.Default.Refresh,
+            imageVector = Icons.Filled.DownloadForOffline,
             contentDescription = "Download Video",
-            tint = Color.White,
+            tint = Color(0xFF8F16CC),
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(16.dp)
+                .padding(top = 40.dp, end = 10.dp)
+                .size(50.dp)
                 .clickable {
                     downloadVideo(context, videoFile)
                 }

@@ -1,6 +1,5 @@
 package com.example.whatsappsaver.Screens
 
-
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -9,146 +8,156 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.widget.Toast
+import androidx.compose.foundation.MarqueeAnimationMode
+import androidx.compose.foundation.MarqueeSpacing
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.DownloadForOffline
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
-import com.google.accompanist.permissions.shouldShowRationale
+import com.google.accompanist.permissions.*
 import java.io.File
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun PicDetail(navController: NavController, PicPath: String, selectedLanguage: String) {
+fun PicDetail(navController: NavController, picPath: String, selectedLanguage: String) {
     val context = LocalContext.current
-    val permissionState = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        // For Android 13 and above
-        rememberPermissionState(permission = android.Manifest.permission.READ_MEDIA_IMAGES)
-    } else {
-        // For older versions
-        rememberPermissionState(permission = android.Manifest.permission.READ_EXTERNAL_STORAGE)
-    }
 
+    // Request permissions for accessing media storage
+    val permissionState = rememberMultiplePermissionsState(
+        permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            listOf(android.Manifest.permission.READ_MEDIA_IMAGES)
+        } else {
+            listOf(
+                android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
+        }
+    )
+
+    // Launch permission request on startup
     LaunchedEffect(Unit) {
-        permissionState.launchPermissionRequest()
+        permissionState.launchMultiplePermissionRequest()
     }
 
     when {
-        permissionState.status.isGranted -> {
-            // Ensure PicPath is correctly formatted as a URI
-            val imageUri = Uri.fromFile(File(PicPath))
+        permissionState.allPermissionsGranted -> {
+            val file = File(picPath)
+            val imageUri = Uri.fromFile(file)  // ✅ No need for FileProvider
 
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 AsyncImage(
                     model = imageUri,
-                    contentDescription = "",
+                    contentDescription = "WhatsApp Image",
                     contentScale = ContentScale.Fit,
                     modifier = Modifier.fillMaxSize()
                 )
 
+                // Back button
                 Icon(
                     imageVector = Icons.Filled.ArrowBack,
-                    contentDescription = "",
+                    contentDescription = "Back",
                     tint = Color.Magenta,
                     modifier = Modifier
                         .clickable { navController.navigateUp() }
                         .align(Alignment.TopStart)
-                        .padding(6.dp)
+                        .padding(start = 20.dp, top = 40.dp)
+                        .width(50.dp)
+                        .height(40.dp)
                 )
 
+                // Download button
                 Icon(
-                    imageVector = Icons.Filled.Refresh,
-                    contentDescription = "",
+                    imageVector = Icons.Filled.DownloadForOffline,
+                    contentDescription = "Download",
                     tint = Color.Magenta,
                     modifier = Modifier
-                        .clickable {
-                            val file = File(PicPath)
-                            downloadImage(context, file)
-                        }
+                        .clickable { downloadImage(context, file) }
                         .align(Alignment.TopEnd)
-                        .padding(6.dp)
-                )
+                        .padding(end = 10.dp, top = 40.dp,)
+                        .size(50.dp))
             }
         }
-        permissionState.status.shouldShowRationale || !permissionState.status.isGranted -> {
-            // Show rationale UI if permission isn't granted
+
+        permissionState.shouldShowRationale -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Storage access is needed to load WhatsApp status images.")
                     Spacer(modifier = Modifier.height(8.dp))
-                    Button(onClick = { permissionState.launchPermissionRequest() }) {
+                    Button(onClick = { permissionState.launchMultiplePermissionRequest() }) {
                         Text("Grant Permission")
                     }
                 }
             }
         }
+
         else -> {
-            // Handle permission permanently denied case or others
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Permission required to load images. Please enable it in settings.")
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Permission required to load images. Enable it in settings.")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = {
+                        val intent = Intent(
+                            android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.fromParts("package", context.packageName, null)
+                        )
+                        context.startActivity(intent)
+                    }) {
+                        Text("Open Settings")
+                    }
+                }
             }
         }
     }
 }
 
+// ✅ Fixes: Correct path, saves in Pictures folder for better visibility
 fun downloadImage(context: Context, file: File) {
     try {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            // Scoped Storage: Save the file in MediaStore for Android 10 and above
             val contentResolver = context.contentResolver
             val contentValues = ContentValues().apply {
                 put(MediaStore.Images.Media.DISPLAY_NAME, file.name)
                 put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
             }
 
             val imageUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-            if (imageUri != null) {
-                contentResolver.openOutputStream(imageUri).use { outputStream ->
+            imageUri?.let {
+                contentResolver.openOutputStream(it)?.use { outputStream ->
                     file.inputStream().use { inputStream ->
-                        inputStream.copyTo(outputStream!!)
+                        inputStream.copyTo(outputStream)
                     }
                 }
-                Toast.makeText(context, "Image saved to Downloads", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(context, "Failed to save image", Toast.LENGTH_SHORT).show()
-            }
+                Toast.makeText(context, "Image saved to Pictures", Toast.LENGTH_SHORT).show()
+            } ?: Toast.makeText(context, "Failed to save image", Toast.LENGTH_SHORT).show()
         } else {
-            // For older versions, use the traditional method
             val downloadsFolder = File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
                 file.name
             )
             file.copyTo(downloadsFolder, overwrite = true)
 
-            saveFileToPreferences(context, downloadsFolder.absolutePath)
-
-            Toast.makeText(context, "Image saved to Downloads", Toast.LENGTH_SHORT).show()
-
-            // Refresh media store
-            val intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
-            intent.data = Uri.fromFile(downloadsFolder)
+            Toast.makeText(context, "Image saved to Pictures", Toast.LENGTH_SHORT).show()
+            val intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(downloadsFolder))
             context.sendBroadcast(intent)
         }
     } catch (e: Exception) {

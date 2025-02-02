@@ -1,18 +1,19 @@
 package com.example.whatsappsaver.Screens
 
-import android.annotation.SuppressLint
-import android.graphics.Bitmap
+import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -20,20 +21,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.whatsappsaver.navigation.Screens
-
+import kotlinx.coroutines.delay
 import java.io.File
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DisplayWhatsAppStatuses(navController: NavController) {
-
+    val context = LocalContext.current
     val statuses = remember { mutableStateListOf<File>() }
+    var isLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
+        isLoading = true
+       delay(500)
+
         val whatsappStatusFolder = File(
             Environment.getExternalStorageDirectory()
                 .toString() + "/Android/media/com.whatsapp/WhatsApp/Media/.Statuses"
@@ -46,26 +51,26 @@ fun DisplayWhatsAppStatuses(navController: NavController) {
             if (statusFiles != null) {
                 statuses.addAll(statusFiles)
             } else {
-                Log.d("WhatsAppStatus", "No image files found")
+                Log.d("WhatsAppStatus", "Image /Video files Not found")
             }
         } else {
             Log.e("WhatsAppStatus", "Folder not found")
         }
+        isLoading = false
     }
 
-    if (statuses.isEmpty()) {
+    if (isLoading) {
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
         ) {
-            Text(text = "No Images Found", style = MaterialTheme.typography.bodyLarge)
+            CircularProgressIndicator()
         }
     } else {
         LazyVerticalGrid(
-            columns = GridCells.Fixed(4),
+            columns = GridCells.Fixed(3),
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 70.dp),
+                .padding(top = 110.dp),
             contentPadding = PaddingValues(4.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -78,9 +83,7 @@ fun DisplayWhatsAppStatuses(navController: NavController) {
                             .fillMaxWidth()
                             .clickable {
                                 navController.navigate(
-                                    Screens.PicDetail.route + "/${
-                                        Uri.encode(statusFile.absolutePath)
-                                    }"
+                                    Screens.PicDetail.route + "/${Uri.encode(statusFile.absolutePath)}"
                                 )
                             }
                             .aspectRatio(1f)
@@ -92,12 +95,22 @@ fun DisplayWhatsAppStatuses(navController: NavController) {
                             contentScale = ContentScale.Crop
                         )
                     }
+                } else {
+                    Toast.makeText(context, "Failed to load image", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
 }
 
-fun loadImageBitmap(file: File): Bitmap? {
-    return BitmapFactory.decodeFile(file.absolutePath)
+
+
+/**
+ * ✅ Loads an image from the given file path safely.
+ */
+fun loadImageBitmap(file: File) = try {
+    BitmapFactory.decodeFile(file.absolutePath)
+} catch (e: Exception) {
+    Log.e("WhatsAppStatus", "Failed to load image: ${e.message}")
+    null
 }

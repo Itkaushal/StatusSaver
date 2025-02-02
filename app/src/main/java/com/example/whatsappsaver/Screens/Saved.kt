@@ -2,6 +2,8 @@ package com.example.whatsappsaver.Screens
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,8 +49,29 @@ fun Saved(navController: NavController, selectedLanguage: String) {
     val savedFiles = remember { mutableStateListOf<String>() }
     LaunchedEffect(Unit) {
         val files = getSavedFilesFromPreferences(context)
-        savedFiles.addAll(files)
+
+        if (files.isEmpty()) {
+            Log.e("SavedMedia", "No saved files found!")
+            Toast.makeText(context, "No saved files found", Toast.LENGTH_SHORT).show()
+        } else {
+            savedFiles.clear()
+
+            // ✅ Ensure file exists before adding to the list
+            val validFiles = files.filter { File(it).exists() }
+
+            if (validFiles.isEmpty()) {
+                Log.e("SavedMedia", "Stored paths do not exist on device!")
+                Toast.makeText(context, "Saved files not found on device", Toast.LENGTH_SHORT).show()
+            }
+
+            savedFiles.addAll(validFiles)
+
+            // ✅ Log the saved files to check
+            Log.d("SavedMedia", "Saved files loaded: $savedFiles")
+        }
     }
+
+
 
     Scaffold(
         topBar = {
@@ -56,7 +79,6 @@ fun Saved(navController: NavController, selectedLanguage: String) {
                 Text(
                     text = when (selectedLanguage) {
                         "Hindi" -> "स्थिति सहेजी गई"
-                        "Marathi" -> "स्थिती जतन केली"
                         "English" -> "Status Saved"
                         else -> "Status Saved"
                     },
@@ -64,7 +86,8 @@ fun Saved(navController: NavController, selectedLanguage: String) {
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 )
-            }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF673AB7)))
+            }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF17A752)),
+                expandedHeight = 40.dp)
         },
     ) {
         if (savedFiles.isEmpty()) {
@@ -91,13 +114,25 @@ fun Saved(navController: NavController, selectedLanguage: String) {
                             .aspectRatio(1f)
                             .clickable {
                                 if (file.extension == "mp4") {
-                                    navController.navigate(Screens.VideoDetail.route + "/${Uri.encode(filePath)}")
+                                    navController.navigate(
+                                        Screens.VideoDetail.route + "/${
+                                            Uri.encode(
+                                                filePath
+                                            )
+                                        }"
+                                    )
                                 } else {
-                                    navController.navigate(Screens.PicDetail.route + "/${Uri.encode(filePath)}")
+                                    navController.navigate(
+                                        Screens.PicDetail.route + "/${
+                                            Uri.encode(
+                                                filePath
+                                            )
+                                        }"
+                                    )
                                 }
                             }
                     ) {
-                        if (file.extension in listOf("jpg", "png")) {
+                        if (file.extension in listOf("jpg", "png","jpeg")) {
                             AsyncImage(
                                 model = filePath,
                                 contentDescription = null,

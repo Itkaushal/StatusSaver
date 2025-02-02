@@ -1,38 +1,18 @@
+@file:OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
+
 package com.example.whatsappsaver.Screens
 
-
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,28 +25,32 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.whatsappsaver.R
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.*
 
-@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun WhatsAppStatusScreen(navController: NavController, selectedLanguage: String) {
-    val permissionState = rememberPermissionState(permission = android.Manifest.permission.READ_EXTERNAL_STORAGE)
-
-    LaunchedEffect(Unit) {
-        permissionState.launchPermissionRequest()
-    }
-
     val context = LocalContext.current
-    val sharedPreferences = context.getSharedPreferences("Settings", Context.MODE_PRIVATE)
-    var selectedLanguage by remember {
-        mutableStateOf(sharedPreferences.getString("selectedLanguage", "English") ?: "English")
+
+    // ✅ Correctly handling multiple permissions
+    val permissionState = rememberMultiplePermissionsState(
+        permissions = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            listOf(android.Manifest.permission.READ_MEDIA_IMAGES)
+        } else {
+            listOf(
+                android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
+        }
+    )
+
+    // ✅ Ensure permission request happens dynamically
+    LaunchedEffect(permissionState.permissions) {
+        if (!permissionState.allPermissionsGranted) {
+            permissionState.launchMultiplePermissionRequest()
+        }
     }
 
-    var showPurchase by remember {
-        mutableStateOf(false)
-    }
+    var showPurchase by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -80,14 +64,10 @@ fun WhatsAppStatusScreen(navController: NavController, selectedLanguage: String)
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .size(26.dp)
-                                    .clickable {
-                                        showPurchase = true
-                                    }
+                                    .clickable { showPurchase = true }
                             )
                         }
-
                         Spacer(modifier = Modifier.width(8.dp))
-
                         Text(
                             text = when (selectedLanguage) {
                                 "Hindi" -> "स्थिति छवि"
@@ -112,17 +92,16 @@ fun WhatsAppStatusScreen(navController: NavController, selectedLanguage: String)
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF673AB7))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF17A752)),
+                expandedHeight = 40.dp
             )
         },
         content = { paddingValues ->
-
-            if (permissionState.status.isGranted) {
-
+            if (permissionState.allPermissionsGranted) {
+                // ✅ Correctly showing UI when permission is granted
                 DisplayWhatsAppStatuses(navController)
-
             } else {
-
+                // ❌ Permission Not Granted UI
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -144,20 +123,35 @@ fun WhatsAppStatusScreen(navController: NavController, selectedLanguage: String)
                             fontWeight = FontWeight.Medium
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { permissionState.launchPermissionRequest() }) {
+                        Button(onClick = {
+                            permissionState.launchMultiplePermissionRequest()
+                        }) {
                             Text("Grant Permission")
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(onClick = {
+                            openAppSettings(context)
+                        }) {
+                            Text("Open Settings")
                         }
                     }
                 }
             }
 
             if (showPurchase) {
-                showPremiumFeatureDialog(LocalContext.current) {
-                    showPurchase = false
-                }
+                showPremiumFeatureDialog(context) { showPurchase = false }
             }
         }
     )
+}
+
+// ✅ Opens app settings if permission is permanently denied
+fun openAppSettings(context: Context) {
+    val intent = Intent(
+        android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+        Uri.fromParts("package", context.packageName, null)
+    )
+    context.startActivity(intent)
 }
 
 @Composable
@@ -176,11 +170,7 @@ fun showPremiumFeatureDialog(context: Context, onDismiss: () -> Unit) {
         },
         confirmButton = {
             TextButton(onClick = {
-                Toast.makeText(
-                    context,
-                    "coming soon!",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(context, "Coming soon!", Toast.LENGTH_SHORT).show()
                 onDismiss()
             }) {
                 Text("Get Premium")

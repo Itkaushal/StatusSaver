@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Person
@@ -26,10 +28,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -77,9 +81,9 @@ fun Navigation(
         }
 
         composable(Screens.PicDetail.route + "/{PicPath}") { backStackEntry ->
-            val PicPath = backStackEntry.arguments?.getString("PicPath")
-            if (PicPath != null) {
-                PicDetail(navController = navController, PicPath, selectedLanguage)
+            val picPath = backStackEntry.arguments?.getString("PicPath")
+            if (picPath != null) {
+                PicDetail(navController = navController, picPath, selectedLanguage)
             }
         }
 
@@ -134,43 +138,36 @@ sealed class Screens(
         return when (this) {
             is ImagesScreen -> when (language) {
                 "Hindi" -> "तस्वीरें"
-                "Marathi" -> "चित्रे"
                 else -> "Images"
             }
 
             is VideosScreen -> when (language) {
                 "Hindi" -> "वीडियो"
-                "Marathi" -> "व्हिडिओ"
                 else -> "Videos"
             }
 
             is Saved -> when (language) {
                 "Hindi" -> "सहेजा हुआ"
-                "Marathi" -> "जतन केलेले"
                 else -> "Saved"
             }
 
             is SettingScreen -> when (language) {
                 "Hindi" -> "सेटिंग्स"
-                "Marathi" -> "सेटिंग्ज"
                 else -> "Settings"
             }
 
             is VideoDetail -> when (language) {
                 "Hindi" -> "वीडियो विवरण"
-                "Marathi" -> "व्हिडिओ तपशील"
                 else -> "Video Detail"
             }
 
             is PicDetail -> when (language) {
                 "Hindi" -> "चित्र विवरण"
-                "Marathi" -> "चित्र तपशील"
                 else -> "Picture Detail"
             }
 
             Privacy_Policy -> when (language) {
                 "Hindi" -> "गोपनीयता नीति"
-                "Marathi" -> "गोपनीयता धोरण"
                 else -> "Privacy Policy"
             }
 
@@ -181,7 +178,6 @@ sealed class Screens(
 
 
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun NavEntry() {
@@ -245,7 +241,10 @@ fun BottomNavigation(
         Screens.SettingScreen
     )
 
-    NavigationBar(containerColor = Color(0xFF673AB7)) {
+    NavigationBar(containerColor = Color(0xFF17A752),
+        modifier = Modifier
+            .height(100.dp)
+            .padding(top = 10.dp)) {
         val navStck by navController.currentBackStackEntryAsState()
         val current = navStck?.destination?.route
         item.forEach {
