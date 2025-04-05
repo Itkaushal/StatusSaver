@@ -230,7 +230,7 @@ fun Videos(navController: NavController, selectedLanguage: String) {
     }
 }
 
-
+// Download video ...................
 fun downloadVideo(context: Context, file: File) {
     try {
         val downloadsFolder = File(
@@ -238,24 +238,19 @@ fun downloadVideo(context: Context, file: File) {
             file.name
         )
         file.copyTo(downloadsFolder, overwrite = true)
-
-        // ✅ Save file path in SharedPreferences
         saveFileToPreferences(context, downloadsFolder.absolutePath)
-
         Toast.makeText(context, "Video saved to Downloads", Toast.LENGTH_SHORT).show()
 
-        // ✅ Refresh media store
         val intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
         intent.data = Uri.fromFile(downloadsFolder)
         context.sendBroadcast(intent)
-
     } catch (e: Exception) {
         e.printStackTrace()
         Toast.makeText(context, "Failed to download video", Toast.LENGTH_SHORT).show()
     }
 }
 
-
+// load thumbnail of video............
 fun loadVideoThumbnail(file: File): Bitmap? {
     return ThumbnailUtils.createVideoThumbnail(
         file.path, MediaStore.Images.Thumbnails.MINI_KIND
@@ -269,16 +264,12 @@ fun saveFileToPreferences(context: Context, filePath: String) {
     val sharedPreferences = context.getSharedPreferences("SavedMedia", Context.MODE_PRIVATE)
     val editor = sharedPreferences.edit()
 
-    // Retrieve existing saved files
+    // Retrieve exist save files...............
     val savedFiles = sharedPreferences.getStringSet("savedFiles", mutableSetOf())?.toMutableSet()
         ?: mutableSetOf()
-
-    savedFiles.add(filePath)  // Add new file path
-
+    savedFiles.add(filePath)
     editor.putStringSet("savedFiles", savedFiles)
-    val success = editor.commit()  // Use commit() for immediate save
-
-    // Log to check if file path is stored
+    val success = editor.commit()
     Log.d("SavedMedia", "File path saved: $filePath, Success: $success")
 }
 
